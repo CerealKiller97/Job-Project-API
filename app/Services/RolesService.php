@@ -7,6 +7,7 @@ namespace App\Services;
 use App\Contracts\RolesServiceInterface;
 use App\DTO\CreateRoleDTO;
 use App\DTO\RoleDTO;
+use App\Exceptions\EntityNotFoundException;
 use App\Models\Role;
 use Hashids\HashidsInterface;
 
@@ -42,10 +43,19 @@ class RolesService implements RolesServiceInterface
     /**
      * @param  string  $id
      * @return object
+     * @throws EntityNotFoundException
      */
     public function getRole(string $id): object
     {
-        // TODO: Implement getRole() method.
+        $role = Role::find($this->hashids->decode($id)[0] ?? null);
+
+        if ($role === null) {
+            throw new EntityNotFoundException("Role");
+        }
+
+        $roleDto = new RoleDTO();
+
+        return $this->mapDTO($role, $roleDto);
     }
 
     /**
@@ -53,24 +63,42 @@ class RolesService implements RolesServiceInterface
      */
     public function createRole(CreateRoleDTO $roleDTO): void
     {
-        // TODO: Implement createRole() method.
+        Role::create([
+           'name' => $roleDTO->name
+        ]);
     }
 
     /**
      * @param  string  $id
      * @param  CreateRoleDTO  $roleDTO
+     * @throws EntityNotFoundException
      */
     public function updateRole(string $id, CreateRoleDTO $roleDTO): void
     {
-        // TODO: Implement updateRole() method.
+        $role = Role::find($this->hashids->decode($id)[0] ?? null);
+
+        if ($role === null) {
+            throw new EntityNotFoundException("Role");
+        }
+
+        $role->name = $roleDTO->name;
+
+        $role->save();
     }
 
     /**
      * @param  string  $id
+     * @throws EntityNotFoundException
      */
     public function deleteRole(string $id): void
     {
-        // TODO: Implement deleteRole() method.
+        $role = Role::find($this->hashids->decode($id)[0] ?? null);
+
+        if ($role === null) {
+            throw new EntityNotFoundException("Role");
+        }
+
+        $role->delete();
     }
 
     private function mapDTO(object $roleDB, RoleDTO $roleDto): RoleDTO

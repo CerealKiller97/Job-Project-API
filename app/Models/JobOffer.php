@@ -8,6 +8,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class JobOffer extends Model
 {
     /**
+     * @var string
+     */
+    protected $table = 'job_offers';
+    /**
      * @var array
      */
     protected $fillable = [

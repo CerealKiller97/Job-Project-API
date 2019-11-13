@@ -3,8 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Contracts\RolesServiceInterface;
+use App\DTO\CreateRoleDTO;
+use App\Exceptions\EntityNotFoundException;
+use App\Http\Requests\RoleRequest;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse as Response;
+use Illuminate\Support\Facades\Log;
 
 class RolesController extends Controller
 {
@@ -32,45 +37,78 @@ class RolesController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  RoleRequest  $request
      * @return Response
      */
-    public function store(Request $request)
+    public function store(RoleRequest $request): Response
     {
-        //
+        try {
+            $this->rolesService->createRole(new CreateRoleDTO($request->validated()));
+            return response()->json(['message' => 'Successfully added new role.'], 201);
+        } catch (Exception $exception) {
+            Log::error($exception->getMessage());
+            return response()->json(['message' => 'Server error, please try later.'], 500);
+        }
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  int  $id
+     * @param  string  $id
      * @return Response
      */
-    public function show($id)
+    public function show(string $id): Response
     {
-        //
+        try {
+            $role = $this->rolesService->getRole($id);
+            return response()->json($role, 200);
+        } catch (EntityNotFoundException $exception) {
+            Log::error($exception->getMessage());
+            return  response()->json(['message' => $exception->getMessage()], 404);
+        } catch (Exception $exception) {
+            Log::error($exception->getMessage());
+            return response()->json(['message' => 'Server error, please try later.'], 500);
+        }
     }
 
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return Response
+     * @param  RoleRequest  $request
+     * @param  string  $id
+     * @return void
      */
-    public function update(Request $request, $id)
+    public function update(RoleRequest $request, string $id)
     {
-        //
+        try {
+            $this->rolesService->updateRole($id, new CreateRoleDTO($request->validated()));
+            return response()->json(null, 204);
+        } catch (EntityNotFoundException $exception) {
+            Log::error($exception->getMessage());
+            return  response()->json(['message' => $exception->getMessage()], 404);
+        } catch (Exception $exception) {
+            Log::error($exception->getMessage());
+            return response()->json(['message' => 'Server error, please try later.'], 500);
+        }
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  int  $id
+     * @param  string  $id
      * @return Response
      */
-    public function destroy($id)
+    public function destroy(string $id)
     {
-        //
+        try {
+            $this->rolesService->deleteRole($id);
+            return response()->json(null, 204);
+        } catch (EntityNotFoundException $exception) {
+            Log::error($exception->getMessage());
+            return  response()->json(['message' => $exception->getMessage()], 404);
+        } catch (Exception $exception) {
+            Log::error($exception->getMessage());
+            return response()->json(['message' => 'Server error, please try later.'], 500);
+        }
     }
 }
