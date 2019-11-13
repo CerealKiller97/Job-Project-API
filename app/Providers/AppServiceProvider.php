@@ -3,7 +3,11 @@
 namespace App\Providers;
 
 use App\Contracts\LoginServiceInterface;
+use App\Contracts\RegisterServiceInterface;
 use App\Services\LoginService;
+use App\Services\RegisterService;
+use Hashids\Hashids;
+use Hashids\HashidsInterface;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -16,6 +20,10 @@ class AppServiceProvider extends ServiceProvider
     public function register()
     {
         $this->app->singleton(LoginServiceInterface::class, LoginService::class);
+        $this->app->singleton(RegisterServiceInterface::class, RegisterService::class);
+        $this->app->singleton(HashidsInterface::class, function () {
+            return new Hashids(getenv('HASHIDS_SALT'), getenv('HASHIDS_LENGTh'));
+        });
     }
 
     /**
