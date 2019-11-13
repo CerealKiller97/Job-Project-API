@@ -4,9 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Contracts\LoginServiceInterface;
 use App\DTO\LoginDTO;
-use App\Exceptions\AccountNotVerifiedException;
-use App\Exceptions\EntityNotFoundException;
-use App\Exceptions\IncorrectPasswordException;
+use App\Exceptions\{AccountNotVerifiedException, EntityNotFoundException, IncorrectPasswordException};
 use App\Http\Controllers\Controller;
 use App\Http\Requests\LoginRequest;
 use Illuminate\Http\JsonResponse as Response;

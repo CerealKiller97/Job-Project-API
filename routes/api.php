@@ -18,20 +18,16 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::group(['middleware' => 'api', 'prefix' => 'auth'], function () {
-    Route::post('login', 'AuthController@login');
-    Route::post('logout', 'AuthController@logout');
-    Route::post('refresh', 'AuthController@refresh');
-    Route::post('me', 'AuthController@me');
+Route::group(['middleware' => 'auth:api', 'prefix' => 'auth'], function () {
+    Route::post('logout', 'Auth\LogoutController@logout');
 });
 
 Route::group(['prefix' => 'auth'], function () {
     Route::post('/login', 'Auth\LoginController@login');
     Route::post('/register', 'Auth\RegisterController@register');
-    Route::get('/verify/{token}', 'Auth\RegisterController@verify');
 });
 
-
+Route::get('/verify/{token}', 'Auth\VerificationController@verify');
 
 Route::group(['middleware' => 'auth.role:Moderator'], function () {
     Route::resource('roles', 'RolesController');
