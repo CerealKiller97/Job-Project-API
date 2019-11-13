@@ -30,7 +30,7 @@ class RegisterService implements RegisterServiceInterface
             'name' => $registerDTO->name,
             'email' => $registerDTO->email,
             'password' => bcrypt($registerDTO->password),
-            'role_id' => $registerDTO->role_id
+            'role_id' => $this->hashingService->decode($registerDTO->role_id)[0]
         ]);
     }
 }

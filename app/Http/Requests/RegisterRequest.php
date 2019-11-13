@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\HashedRoleRule;
+use Hashids\HashidsInterface;
 use Illuminate\Foundation\Http\FormRequest;
 
 class RegisterRequest extends FormRequest
@@ -27,7 +29,7 @@ class RegisterRequest extends FormRequest
             'name'  => ['bail', 'required', 'regex:/^[A-Z][a-z]+(\s[A-Z][a-z]+)+$/'],
             'email' => ['bail', 'required', 'email', 'unique:users'],
             'password' => ['bail', 'required', 'min:8', 'confirmed', 'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/'],
-            'role_id' => ['bail', 'required', 'exists:roles,id']
+            'role_id' => ['bail', 'required', new HashedRoleRule($this->container->make(HashidsInterface::class))]
         ];
     }
 
