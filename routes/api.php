@@ -31,4 +31,7 @@ Route::group(['prefix' => 'auth'], function () {
 });
 
 
-Route::resource('roles', 'RolesController');
+
+Route::group(['middleware' => 'auth.role:Moderator'], function () {
+    Route::resource('roles', 'RolesController');
+});
