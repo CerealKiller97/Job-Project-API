@@ -12,13 +12,24 @@ class VerificationAccountMail extends Mailable
     use Queueable, SerializesModels;
 
     /**
+     * @var string
+     */
+    private $jwt;
+    /**
+     * @var string
+     */
+    private $email;
+
+    /**
      * Create a new message instance.
      *
-     * @return void
+     * @param  string  $email
+     * @param  string  $jwt
      */
-    public function __construct()
+    public function __construct(string $email, string $jwt)
     {
-        //
+        $this->email = $email;
+        $this->jwt = $jwt;
     }
 
     /**
@@ -28,6 +39,16 @@ class VerificationAccountMail extends Mailable
      */
     public function build()
     {
-        return $this->view('view.name');
+        $address = 'noreply@test.com';
+        $subject = 'Account verification!';
+        $name = 'Softwarehaus project';
+
+        return $this->view('emails.verificationAccount')
+            ->from($this->email, $name)
+            ->cc($address, $name)
+            ->bcc($address, $name)
+            ->replyTo($address, $name)
+            ->subject($subject)
+            ->with([ 'token' => $this->jwt ]);
     }
 }

@@ -8,6 +8,7 @@ use App\Contracts\RegisterServiceInterface;
 use App\DTO\RegisterDTO;
 use App\Models\User;
 use Hashids\HashidsInterface;
+use Tymon\JWTAuth\JWTAuth;
 
 class RegisterService implements RegisterServiceInterface
 {
@@ -15,22 +16,29 @@ class RegisterService implements RegisterServiceInterface
      * @var HashidsInterface
      */
     private $hashingService;
+    /**
+     * @var JWTAuth
+     */
+    private $jwtService;
 
-    public function __construct(HashidsInterface $hashingService)
+    public function __construct(HashidsInterface $hashingService, JWTAuth $auth)
     {
         $this->hashingService = $hashingService;
+        $this->jwtService = $auth;
     }
 
     /**
      * @param  RegisterDTO  $registerDTO
      */
-    public function register(RegisterDTO $registerDTO): void
+    public function register(RegisterDTO $registerDTO): string
     {
-        User::create([
+        $user = User::create([
             'name' => $registerDTO->name,
             'email' => $registerDTO->email,
             'password' => bcrypt($registerDTO->password),
             'role_id' => $this->hashingService->decode($registerDTO->role_id)[0]
         ]);
+
+        return $this->jwtService->fromUser($user);
     }
 }

@@ -10,6 +10,7 @@ interface RegisterServiceInterface
 {
     /**
      * @param  RegisterDTO  $registerDTO
+     * @return string
      */
-    public function register(RegisterDTO $registerDTO): void;
+    public function register(RegisterDTO $registerDTO): string;
 }
