@@ -18,8 +18,8 @@ class CreateJobOffersTable extends Migration
             $table->string('title', 200);
             $table->longText('description');
             $table->string('email', 200);
-            $table->boolean('isPublished');
-            $table->boolean('isSpam')->nullable(true);
+            $table->boolean('isPublished')->nullable(true)->default(null);
+            $table->boolean('isSpam')->nullable(true)->default(null);
 
             $table->unsignedBigInteger('user_id');
 

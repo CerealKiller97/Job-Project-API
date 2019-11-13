@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Factory;
 $factory->define(JobOffer::class, function (Faker $faker) {
     return [
         'title' => $faker->title,
-        'description' => $faker->randomLetter,
+        'description' => $faker->text,
         'email' => $faker->safeEmail,
         'isSpam' => $faker->boolean(50),
         'isPublished' => $faker->boolean(50),

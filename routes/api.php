@@ -32,3 +32,7 @@ Route::get('/verify/{token}', 'Auth\VerificationController@verify');
 Route::group(['middleware' => 'auth.role:Moderator'], function () {
     Route::resource('roles', 'RolesController');
 });
+
+Route::group(['middleware' => 'auth.role:HR Manager'], function () {
+   Route::resource('job-offers', 'JobOffersController');
+});
