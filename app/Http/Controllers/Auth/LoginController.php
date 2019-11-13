@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Contracts\LoginServiceInterface;
 use App\DTO\LoginDTO;
+use App\Exceptions\AccountNotVerifiedException;
 use App\Exceptions\EntityNotFoundException;
 use App\Exceptions\IncorrectPasswordException;
 use App\Http\Controllers\Controller;
@@ -38,6 +39,9 @@ class LoginController extends Controller
         } catch (EntityNotFoundException $exception) {
             Log::error($exception->getMessage());
             return response()->json(['message' => $exception->getMessage()], 404);
+        } catch (AccountNotVerifiedException $exception) {
+            Log::error($exception->getMessage());
+            return response()->json(['message' => $exception->getMessage()], 400);
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());
             return response()->json(['message' => $exception->getMessage()], 500);

@@ -6,7 +6,7 @@ namespace App\Services;
 
 use App\Contracts\LoginServiceInterface;
 use App\DTO\LoginDTO;
-use App\Exceptions\{EntityNotFoundException, IncorrectPasswordException};
+use App\Exceptions\{AccountNotVerifiedException, EntityNotFoundException, IncorrectPasswordException};
 use App\Models\User;
 use Illuminate\Contracts\Hashing\Hasher;
 use Tymon\JWTAuth\JWTAuth;
@@ -32,6 +32,7 @@ class LoginService implements LoginServiceInterface
      * @param  LoginDTO  $loginDTO
      * @throws EntityNotFoundException
      * @throws IncorrectPasswordException
+     * @throws AccountNotVerifiedException
      * @return array
      */
     public function login(LoginDTO $loginDTO): array
@@ -47,6 +48,10 @@ class LoginService implements LoginServiceInterface
 
         if (!$this->hasher->check($loginDTO->password, $user->password)) {
             throw new IncorrectPasswordException();
+        }
+
+        if (!$user->hasVerifiedEmail()) {
+            throw new AccountNotVerifiedException();
         }
 
         $token = $this->jwtAuth->fromUser($user);
