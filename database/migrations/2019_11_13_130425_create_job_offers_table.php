@@ -13,7 +13,7 @@ class CreateJobOffersTable extends Migration
      */
     public function up()
     {
-        Schema::create('job_offer', function (Blueprint $table) {
+        Schema::create('job_offers', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('title', 200);
             $table->longText('description');
