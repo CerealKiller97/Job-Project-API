@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Contracts\JobStatusServiceInterface;
 use App\Exceptions\EntityNotFoundException;
+use App\Exceptions\JobOfferAlreadyApprovedException;
+use App\Exceptions\JobOfferIsAlreadySpamException;
 use Exception;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Http\Request;
@@ -32,11 +34,21 @@ class JobOfferStatusController extends Controller
     {
         try {
             $this->jobStatusService->jobStatus($id, $status);
-            return view('welcome');
+//            return view('welcome');
         } catch (EntityNotFoundException $exception) {
             Log::error($exception->getMessage());
+            dd($exception->getMessage());
+        }
+        catch (JobOfferIsAlreadySpamException $exception) {
+            Log::error($exception->getMessage());
+            dd($exception->getMessage());
+        }
+        catch (JobOfferAlreadyApprovedException $exception) {
+            Log::error($exception->getMessage());
+            dd($exception->getMessage());
         }
         catch (Exception $exception) {
+            Log::error($exception->getMessage());
             dd($exception->getMessage());
         }
     }
