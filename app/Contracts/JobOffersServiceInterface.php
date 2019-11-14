@@ -11,6 +11,8 @@ use App\Models\JobOffer;
 
 interface JobOffersServiceInterface
 {
+    const SPAM = 'spam';
+    CONST APPROVE = 'approve';
     /**
      * @return array
      */

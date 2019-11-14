@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -82,5 +83,10 @@ class User extends Authenticatable implements JWTSubject
             'email' => $this->email,
             'role' => $this->role->name
         ];
+    }
+
+    public function scopeModerators(Builder $query)
+    {
+        $query->where('role_id', '=', 2);
     }
 }

@@ -49,6 +49,7 @@ class JobOffersController extends Controller
             return response()->json(['message' => 'Successfully added new job.'], 201);
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());
+            dd($exception->getMessage());
             return response()->json(['message' => 'Server error, please try later']);
         }
     }

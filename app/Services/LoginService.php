@@ -49,7 +49,7 @@ class LoginService implements LoginServiceInterface
         $user = User::query()->where('email', '=', $loginDTO->email)->first();
 
         if ($user === null) {
-            throw new EntityNotFoundException();
+            throw new EntityNotFoundException("User");
         }
 
         if (!$this->hasher->check($loginDTO->password, $user->password)) {

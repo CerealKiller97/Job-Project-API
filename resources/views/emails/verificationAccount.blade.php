@@ -5,6 +5,6 @@
 </head>
 <body>
 <h2>Verification mail</h2>
-<a href="http://localhost/job-project/public/api/verify/{{ $token }}">Verify account</a>
+<a href="{{ getenv('FRONTEND_URL') }}/auth/verification?token={{ $token }}">Verify account</a>
 </body>
 </html>

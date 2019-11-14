@@ -29,6 +29,7 @@ class RegisterService implements RegisterServiceInterface
 
     /**
      * @param  RegisterDTO  $registerDTO
+     * @return string
      */
     public function register(RegisterDTO $registerDTO): string
     {

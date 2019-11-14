@@ -8,9 +8,12 @@ use App\Contracts\JobOffersServiceInterface;
 use App\DTO\CreateJobOfferDTO;
 use App\DTO\JobOfferDTO;
 use App\Exceptions\EntityNotFoundException;
+use App\Mail\ModeratorMail;
 use App\Models\JobOffer;
+use App\Models\User;
 use Carbon\Carbon;
 use Hashids\HashidsInterface;
+use Illuminate\Support\Facades\Mail;
 
 class JobOffersService implements JobOffersServiceInterface
 {
@@ -76,9 +79,18 @@ class JobOffersService implements JobOffersServiceInterface
 
         $jobs = auth()->user()->jobOffers;
 
-        if (count($jobs) === 1) {
-            dd('email');
-            //email,
+        if(auth()->user()->newUser) {
+            auth()->user()->newUser = false;
+            auth()->user()->save();
+
+            // TODO: FIX THIS PART WITH QUEUES
+
+            $moderatorsEmail = User::Moderators()->pluck('email');
+
+            foreach ($moderatorsEmail as $mod) {
+                Mail::to($mod)->send(new ModeratorMail($job, $mod));
+            }
+
         } else {
             $job->isPublished = true;
             $job->save();

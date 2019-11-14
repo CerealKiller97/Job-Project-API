@@ -25,7 +25,14 @@ class LoginRequest extends FormRequest
     {
         return [
             'email' => ['bail', 'required', 'email'],
-            'password' => ['bail', 'required', 'min:8']
+            'password' => ['bail', 'required', 'min:8', 'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/']
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'password.regex' => 'Password must contain 1 uppercase, 1 lowercase 1 number and must be at least 8 characters long.'
         ];
     }
 }

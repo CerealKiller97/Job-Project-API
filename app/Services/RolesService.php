@@ -18,6 +18,10 @@ class RolesService implements RolesServiceInterface
      */
     private $hashids;
 
+    /**
+     * RolesService constructor.
+     * @param  HashidsInterface  $hashids
+     */
     public function __construct(HashidsInterface $hashids)
     {
         $this->hashids = $hashids;

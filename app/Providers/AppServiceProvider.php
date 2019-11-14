@@ -3,12 +3,14 @@
 namespace App\Providers;
 
 use App\Contracts\{JobOffersServiceInterface,
+    JobStatusServiceInterface,
     LoginServiceInterface,
     RegisterServiceInterface,
     RolesServiceInterface,
     VerificationMailServiceInterface,
     VerificationTokenServiceInterface};
 use App\Services\{JobOffersService,
+    JobStatusService,
     LoginService,
     RegisterService,
     RolesService,
@@ -33,6 +35,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(VerificationTokenServiceInterface::class, VerificationTokenService::class);
         $this->app->singleton(VerificationMailServiceInterface::class, VerificationMailService::class);
         $this->app->singleton(JobOffersServiceInterface::class, JobOffersService::class);
+        $this->app->singleton(JobStatusServiceInterface::class, JobStatusService::class);
 
         $this->app->singleton(HashidsInterface::class, function () {
             return new Hashids(getenv('HASHIDS_SALT'), getenv('HASHIDS_LENGTh'));
