@@ -8,6 +8,7 @@ use App\Contracts\VerificationTokenServiceInterface;
 use App\Exceptions\AccountAlreadyVerifiedException;
 use App\Exceptions\InvalidTokenException;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Tymon\JWTAuth\JWTAuth;
 
 class VerificationTokenService implements VerificationTokenServiceInterface
@@ -23,30 +24,28 @@ class VerificationTokenService implements VerificationTokenServiceInterface
     }
 
     /**
-     * @param  string  $token
+     * @param  string  $email
      * @return bool
-     * @throws InvalidTokenException
-     * @throws AccountAlreadyVerifiedException
      */
-    public function verify(string $token): bool
+    public function verify(string $email): bool
     {
-        $this->auth->setToken($token);
 
-        $decodedEmail = $this->auth->getPayload()['email'];
+        DB::beginTransaction();
 
-        $user = User::query()->where('email', '=', $decodedEmail)->first();
+        $updated = User::query()
+            ->where([
+                ['email', '=', $email],
+                ['email_verified_at', '=', null]
+            ])
+            ->update([
+                'email_verified_at' => now()
+            ]);
+        if ($updated === 1) {
+            DB::commit();
+            return true;
+        }
 
-       if ($user === null) {
-           throw new InvalidTokenException();
-       }
-
-       if ($user->email_verified_at !== null) {
-            throw new AccountAlreadyVerifiedException();
-       }
-
-       $user->email_verified_at = now();
-
-       return $user->save();
-
+        DB::rollBack();
+        return false;
     }
 }

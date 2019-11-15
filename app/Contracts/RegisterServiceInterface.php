@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace App\Contracts;
 
-use App\DTO\RegisterDTO;
+use App\DTO\Register;
+use App\Models\User;
 
 interface RegisterServiceInterface
 {
     /**
-     * @param  RegisterDTO  $registerDTO
-     * @return string
+     * @param  Register  $registerDTO
+     * @return User
      */
-    public function register(RegisterDTO $registerDTO): string;
+    public function register(Register $registerDTO): User;
 }

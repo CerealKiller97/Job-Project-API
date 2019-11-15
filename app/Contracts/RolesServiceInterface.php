@@ -4,34 +4,40 @@ declare(strict_types=1);
 
 namespace App\Contracts;
 
-use App\DTO\CreateRoleDTO;
+use App\DTO\CreateRole;
+use App\Exceptions\EntityNotFoundException;
+use App\Http\Resources\Role;
+use App\Http\Resources\Roles;
 
 interface RolesServiceInterface
 {
     /**
-     * @return array
+     * @return Roles
      */
-    public function getRoles(): array;
+    public function getRoles(): Roles;
 
     /**
      * @param  string  $id
-     * @return object
+     * @return Role
      */
-    public function getRole(string $id): object;
+    public function getRole(string $id): Role;
 
     /**
-     * @param  CreateRoleDTO  $roleDTO
+     * @param  CreateRole  $roleDTO
      */
-    public function createRole(CreateRoleDTO $roleDTO): void;
-
-    /**
-     * @param  string  $id
-     * @param  CreateRoleDTO  $roleDTO
-     */
-    public function updateRole(string $id, CreateRoleDTO $roleDTO): void;
+    public function createRole(CreateRole $roleDTO): void;
 
     /**
      * @param  string  $id
+     * @param  CreateRole  $roleDTO
+     * @return bool
      */
-    public function deleteRole(string $id): void;
+    public function updateRole(string $id, CreateRole $roleDTO): bool;
+
+    /**
+     * @param  string  $id
+     * @throws EntityNotFoundException
+     * @return bool
+     */
+    public function deleteRole(string $id): bool;
 }

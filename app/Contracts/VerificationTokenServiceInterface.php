@@ -4,15 +4,11 @@ declare(strict_types=1);
 
 namespace App\Contracts;
 
-use App\Exceptions\{AccountAlreadyVerifiedException, InvalidTokenException};
-
 interface VerificationTokenServiceInterface
 {
     /**
-     * @param  string  $token
+     * @param  string  $email
      * @return bool
-     * @throws InvalidTokenException
-     * @throws AccountAlreadyVerifiedException
      */
-    public function verify(string $token): bool;
+    public function verify(string $email): bool;
 }

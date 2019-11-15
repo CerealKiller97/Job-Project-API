@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,6 +11,20 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 
+/**
+ * Class User
+ * @package App\Models
+ * @property integer $id
+ * @property string $name
+ * @property string $email
+ * @property string $password
+ * @property Carbon $email_verified_at
+ * @property integer $role_id
+ * @property Role $role
+ * @property bool $newUser
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ */
 class User extends Authenticatable implements JWTSubject
 {
     use Notifiable;
@@ -26,12 +41,16 @@ class User extends Authenticatable implements JWTSubject
         'role_id'
     ];
 
+//    protected $with = ['role'];
+
     /**
      * The attributes that should be hidden for arrays.
      *
      * @var array
      */
     protected $hidden = [
+        'role_id',
+        'id',
         'password',
     ];
 

@@ -2,22 +2,24 @@
 
 namespace App\Http\Controllers;
 
-use App\Contracts\JobOffersServiceInterface;
-use App\DTO\CreateJobOfferDTO;
+use App\Contracts\JobOffers;
+use App\DTO\CreateJobOffer;
 use App\Exceptions\EntityNotFoundException;
 use App\Http\Requests\JobOfferRequest;
 use App\Http\Requests\JobOfferSearchRequest;
+use Exception;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse as Response;
 use Illuminate\Support\Facades\Log;
 
 class JobOffersController extends Controller
 {
     /**
-     * @var JobOffersServiceInterface
+     * @var JobOffers
      */
     private $jobOfferService;
 
-    public function __construct(JobOffersServiceInterface $jobOfferService)
+    public function __construct(JobOffers $jobOfferService)
     {
         $this->jobOfferService = $jobOfferService;
     }
@@ -30,8 +32,7 @@ class JobOffersController extends Controller
      */
     public function index(JobOfferSearchRequest $request): Response
     {
-         dd($request->getPagedRequest());
-        $jobOffers = $this->jobOfferService->getJobs();
+        $jobOffers = $this->jobOfferService->getJobs(1, 5);
 
         return response()->json($jobOffers, 200);
     }
@@ -45,12 +46,12 @@ class JobOffersController extends Controller
     public function store(JobOfferRequest $request): Response
     {
         try {
-            $this->jobOfferService->addJobOffer(new CreateJobOfferDTO($request->validated()));
-            return response()->json(['message' => 'Successfully added new job.'], 201);
-        } catch (\Exception $exception) {
+            $job = $this->jobOfferService->addJobOffer(new CreateJobOffer($request->validated()), $request->user());
+            return response()->json($job, 201);
+        } catch (Exception $exception) {
             Log::error($exception->getMessage());
             dd($exception->getMessage());
-            return response()->json(['message' => 'Server error, please try later']);
+            return response()->json(['message' => 'Server error, please try later'], 500);
         }
     }
 
@@ -65,35 +66,45 @@ class JobOffersController extends Controller
         try {
             $jobOffer = $this->jobOfferService->getJobOffer($id);
             return response()->json($jobOffer, 200);
-        } catch (EntityNotFoundException $exception) {
+        } catch (ModelNotFoundException $exception) {
             Log::error($exception->getMessage());
-            return response()->json(['message'=> $exception->getMessage()], 404);
-        } catch (\Exception $exception) {
+            return response()->json(['message'=> "Job offer not found."], 404);
+        } catch (Exception $exception) {
             Log::error($exception->getMessage());
-            return response()->json(['message' => 'Server error, please try later']);
+            return response()->json(['message' => 'Server error, please try later'], 500);
         }
     }
 
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @param  JobOfferRequest  $request
+     * @param  string  $id
+     * @return Response
      */
-    public function update(Request $request, $id)
+    public function update(JobOfferRequest $request, string $id): Response
     {
-        //
+        try {
+            $job = new CreateJobOffer($request->validated());
+            $this->jobOfferService->updateJobOffer($id, $job);
+            return response()->json(null, 204);
+        }catch (ModelNotFoundException $exception) {
+            Log::error($exception->getMessage());
+            return response()->json(['message' => $exception->getMessage()], 404);
+        }
+        catch (Exception $exception) {
+            Log::error($exception->getMessage());
+            return response()->json(['message' => 'Server error, please try later.'], 500);
+        }
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @param  string  $id
+     * @return void
      */
-    public function destroy($id)
+    public function destroy(string $id): Response
     {
-        //
     }
 }

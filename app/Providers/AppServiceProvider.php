@@ -2,7 +2,7 @@
 
 namespace App\Providers;
 
-use App\Contracts\{JobOffersServiceInterface,
+use App\Contracts\{JobOffers,
     JobStatusServiceInterface,
     LoginServiceInterface,
     RegisterServiceInterface,
@@ -33,12 +33,11 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(RegisterServiceInterface::class, RegisterService::class);
         $this->app->singleton(RolesServiceInterface::class, RolesService::class);
         $this->app->singleton(VerificationTokenServiceInterface::class, VerificationTokenService::class);
-        $this->app->singleton(VerificationMailServiceInterface::class, VerificationMailService::class);
-        $this->app->singleton(JobOffersServiceInterface::class, JobOffersService::class);
+        $this->app->singleton(JobOffers::class, JobOffersService::class);
         $this->app->singleton(JobStatusServiceInterface::class, JobStatusService::class);
 
         $this->app->singleton(HashidsInterface::class, function () {
-            return new Hashids(getenv('HASHIDS_SALT'), getenv('HASHIDS_LENGTh'));
+            return new Hashids(getenv('HASHIDS_SALT'), getenv('HASHIDS_LENGTH'));
         });
     }
 

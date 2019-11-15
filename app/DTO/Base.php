@@ -2,6 +2,8 @@
 
 namespace App\DTO;
 
+use TypeError;
+
 class Base
 {
     public function __construct(array $properties)
@@ -16,13 +18,15 @@ class Base
         if (property_exists($this, $name)) {
             return $this->{$name};
         }
-        return null;
+        throw new TypeError('Property ' . $name . ' doens\'t exist');
     }
 
     public function __set($name, $value)
     {
         if (property_exists($this, $name)) {
             $this->{$name} = $value;
+        } else {
+            throw new TypeError('Property ' . $name . ' doens\'t exist');
         }
     }
 

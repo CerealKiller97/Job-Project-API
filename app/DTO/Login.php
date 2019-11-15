@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace App\DTO;
 
-class RegisterDTO extends Base
+/**
+ * Class Login
+ * @package App\DTO
+ * @property string $email
+ * @property string $password
+ */
+class Login extends Base
 {
-    /**
-     * @var string
-     */
-    protected $name;
-
     /**
      * @var string
      */
@@ -19,8 +20,4 @@ class RegisterDTO extends Base
      * @var string
      */
     protected $password;
-    /**
-     * @var string
-     */
-    protected $role_id;
 }

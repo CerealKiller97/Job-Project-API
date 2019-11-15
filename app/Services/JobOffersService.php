@@ -4,18 +4,20 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Contracts\JobOffersServiceInterface;
-use App\DTO\CreateJobOfferDTO;
-use App\DTO\JobOfferDTO;
-use App\Exceptions\EntityNotFoundException;
-use App\Mail\ModeratorMail;
-use App\Models\JobOffer;
+use App\Contracts\JobOffers;
+use App\DTO\CreateJobOffer;
+use App\Http\Resources\Job;
+use App\Http\Resources\Jobs;
+use App\Jobs\SendEmailToModerators;
+use App\Models\JobOffer as JobOfferModel;
 use App\Models\User;
-use Carbon\Carbon;
+use App\Notifications\FirstJobPosted;
 use Hashids\HashidsInterface;
-use Illuminate\Support\Facades\Mail;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Facades\DB;
+use Throwable;
 
-class JobOffersService implements JobOffersServiceInterface
+class JobOffersService implements JobOffers
 {
     /**\
      * @var HashidsInterface
@@ -28,132 +30,103 @@ class JobOffersService implements JobOffersServiceInterface
     }
 
     /**
-     * @return array
+     * @param  int  $page
+     * @param  int  $perPage
+     * @return Jobs
      */
-    public function getJobs(): array
+    public function getJobs(int $page, int $perPage): Jobs
     {
-//        $jobOffers = JobOffer::all();
-//
-//        $arr = [];
-//
-//        foreach ($jobOffers as $jobOffer) {
-//            $jobDTO = new JobOfferDTO();
-//
-//            $arr[] = $this->mapDTO($jobOffer, $jobDTO);
-//        }
+        $jobOffers = JobOfferModel::query()->where('user_id', '=', auth()->user()->id)->paginate($perPage, ['*'], 'page', $page);
 
-        return [];
+        return new Jobs($jobOffers, $this->hashIdsService);
     }
 
     /**
      * @param  string  $id
-     * @return JobOfferDTO
-     * @throws EntityNotFoundException
+     * @return Job
      */
-    public function getJobOffer(string $id): JobOfferDTO
+    public function getJobOffer(string $id): Job
     {
-        $jobOffer = JobOffer::find($this->hashIdsService->decode($id)[0] ?? null);
-
-        if ($jobOffer === null) {
-            throw new EntityNotFoundException("Job offer");
-        }
-
-        $jobDto = new JobOfferDTO();
-
-        return $this->mapDTO($jobOffer, $jobDto);
+        return new  Job(JobOfferModel::query()
+            ->findOrFail($this->hashIdsService->decode($id)[0] ?? null), $this->hashIdsService);
     }
 
     /**
-     * @param  CreateJobOfferDTO  $createJobOfferDTO
+     * @param  CreateJobOffer  $createJobOfferDTO
+     * @param  User  $user
+     * @return Job
+     * @throws Throwable
      */
-    public function addJobOffer(CreateJobOfferDTO $createJobOfferDTO): void
+    public function addJobOffer(CreateJobOffer $createJobOfferDTO, User $user): Job
     {
-        $job = auth()->user()->jobOffers()->create([
+        /** @var JobOfferModel $job */
+        $job = new JobOfferModel([
             'title' => $createJobOfferDTO->title,
             'description' => $createJobOfferDTO->description,
             'email' => $createJobOfferDTO->email,
-            'isSpam' => null,
-            'isPublished' => null,
-            'valid_until' => $createJobOfferDTO->valid_until
+            'state' => $user->newUser === true ? JobOfferModel::NO_STATE : JobOfferModel::PUBLISHED,
+            'valid_until' => $createJobOfferDTO->validUntil
         ]);
 
-        $jobs = auth()->user()->jobOffers;
+        $user->jobOffers()->save($job);
 
-        if(auth()->user()->newUser) {
-            auth()->user()->newUser = false;
-            auth()->user()->save();
+        if ($user->newUser) {
+            $user->newUser = false;
+            $user->saveOrFail();
 
-            // TODO: FIX THIS PART WITH QUEUES
+            $notification = (new FirstJobPosted($job))->delay(now()->addSeconds(10));
 
-            $moderatorsEmail = User::Moderators()->pluck('email');
-
-            foreach ($moderatorsEmail as $mod) {
-                Mail::to($mod)->send(new ModeratorMail($job, $mod));
-            }
-
-        } else {
-            $job->isPublished = true;
-            $job->save();
+            $user->notify($notification);
+            SendEmailToModerators::dispatch($job)
+                ->delay(now()->addSeconds(10));
         }
+
+
+        return new Job($job, $this->hashIdsService);
     }
 
     /**
      * @param  string  $id
-     * @param  CreateJobOfferDTO  $createJobOfferDTO
-     * @throws EntityNotFoundException
+     * @param  CreateJobOffer  $createJobOfferDTO
+     * @return bool
+     * @throws ModelNotFoundException
+     * @throws Throwable
      */
-    public function updateJobOffer(string $id, CreateJobOfferDTO $createJobOfferDTO): void
+    public function updateJobOffer(string $id, CreateJobOffer $createJobOfferDTO): bool
     {
-        $jobOffer = JobOffer::find($this->hashids->decode($id)[0] ?? null);
+        DB::beginTransaction();
+        $updated = JobOfferModel::query()
+                ->where('id', '=', $this->hashIdsService->decode($id)[0] ?? null)
+                ->update([
+                    'title' => $createJobOfferDTO->title,
+                    'description' => $createJobOfferDTO->description,
+                    'email' => $createJobOfferDTO->email,
+                    'valid_until' => $createJobOfferDTO->validUntil
+                ]) > 0;
 
-        if ($jobOffer === null) {
-            throw new EntityNotFoundException("Role");
+        if ($updated) {
+            DB::commit();
+            return true;
         }
-
-        if ($jobOffer->title !== $createJobOfferDTO->title) {
-            $jobOffer->title = $createJobOfferDTO->title;
-        }
-
-        if ($jobOffer->description !== $createJobOfferDTO->description) {
-            $jobOffer->description = $createJobOfferDTO->description;
-        }
-
-        if ($jobOffer->email !== $createJobOfferDTO->email) {
-            $jobOffer->email = $createJobOfferDTO->email;
-        }
-
-        if ($jobOffer->valid_until !== $createJobOfferDTO->valid_until) {
-            $jobOffer->valid_until = $createJobOfferDTO->valid_until;
-        }
-
-        $jobOffer->save();
+        DB::rollBack();
+        throw new ModelNotFoundException('Job offer not found.');
     }
 
     /**
      * @param  string  $id
-     * @throws EntityNotFoundException
+     * @return bool
      */
-    public function deleteJobOffer(string $id): void
+    public function deleteJobOffer(string $id): bool
     {
-        $jobOffer = JobOffer::find($this->hashids->decode($id)[0] ?? null);
+        DB::beginTransaction();
+        $deleted = JobOfferModel::destroy($this->hashids->decode($id)[0] ?? null) > 0;
 
-        if ($jobOffer === null) {
-            throw new EntityNotFoundException("Job offer");
+        if ($deleted) {
+            DB::commit();
+            return true;
         }
 
-        $jobOffer->delete();
-    }
-
-    private function mapDTO(object $jobOfferDB, JobOfferDTO $jobOfferDTO): JobOfferDTO
-    {
-        $jobOfferDTO->id = $this->hashIdsService->encode($jobOfferDB->id);
-        $jobOfferDTO->title = $jobOfferDB->title;
-        $jobOfferDTO->description = $jobOfferDB->description;
-        $jobOfferDTO->email = $jobOfferDB->email;
-        $jobOfferDTO->isPublished = $jobOfferDB->isPublished;
-        $jobOfferDTO->isSpan = $jobOfferDB->isSpan;
-        $jobOfferDTO->valid_until =  Carbon::parse($jobOfferDB->valid_until)->format('d.m.Y');
-
-        return $jobOfferDTO;
+        DB::rollBack();
+        return false;
     }
 }

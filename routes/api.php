@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\CheckForModerator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -27,11 +28,16 @@ Route::group(['prefix' => 'auth'], function () {
     Route::post('/register', 'Auth\RegisterController@register');
 });
 
-Route::get('/verify/{token}', 'Auth\VerificationController@verify');
+Route::middleware('signed')->get('/verify', 'Auth\VerificationController@verify')
+    ->name('verify');
 
 Route::resource('roles', 'RolesController');
 
 Route::group(['middleware' => 'auth.role:HR Manager'], function () {
    Route::resource('job-offers', 'JobOffersController');
 });
+
+Route::middleware(['signed', 'auth:api', CheckForModerator::class])
+    ->get('/offers', 'JobOfferStatusController@status')
+    ->name('job_status');
 

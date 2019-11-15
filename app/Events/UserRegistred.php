@@ -2,6 +2,7 @@
 
 namespace App\Events;
 
+use App\Models\User;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PresenceChannel;
@@ -10,18 +11,25 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class UserHasRegistedEvent
+class UserRegistred
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
+
+    private $user;
 
     /**
      * Create a new event instance.
      *
-     * @return void
+     * @param  User  $user
      */
-    public function __construct()
+    public function __construct(User $user)
     {
-        //
+        $this->user = $user;
+    }
+
+    public function getUser(): User
+    {
+        return $this->user;
     }
 
     /**

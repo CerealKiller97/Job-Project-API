@@ -4,17 +4,18 @@ declare(strict_types=1);
 
 namespace App\Contracts;
 
-use App\DTO\LoginDTO;
-use App\Exceptions\{AccountNotVerifiedException, EntityNotFoundException, IncorrectPasswordException};
+use App\DTO\Login;
+use App\Exceptions\{AccountNotVerifiedException, IncorrectPasswordException};
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 interface LoginServiceInterface
 {
     /**
-     * @param  LoginDTO  $loginDTO
-     * @throws EntityNotFoundException
+     * @param  Login  $loginDTO
+     * @return array
      * @throws IncorrectPasswordException
      * @throws AccountNotVerifiedException
-     * @return array
+     * @throws ModelNotFoundException
      */
-    public function login(LoginDTO $loginDTO): array;
+    public function login(Login $loginDTO): array;
 }

@@ -3,11 +3,9 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Contracts\VerificationTokenServiceInterface;
-use App\Exceptions\AccountAlreadyVerifiedException;
-use App\Exceptions\InvalidTokenException;
 use App\Http\Controllers\Controller;
-use Illuminate\Http\JsonResponse as Response;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 
 class VerificationController extends Controller
 {
@@ -18,21 +16,19 @@ class VerificationController extends Controller
         $this->verificationTokenService = $verificationTokenService;
     }
 
-    public function verify(string $token): Response
+    public function verify(Request $request): RedirectResponse
     {
-        try {
-            $this->verificationTokenService->verify($token);
-            return response()->json(['message' => 'Account successfully verified.'], 200);
-        } catch (InvalidTokenException $exception) {
-            Log::error($exception->getMessage());
-            return response()->json(['message' => 'Invalid verification token.'], 400);
-        } catch (AccountAlreadyVerifiedException $exception) {
-            Log::error($exception->getMessage());
-            return response()->json(['message' => 'Account already verified.'], 400);
-        } catch (Exception $exception) {
-            Log::error($exception->getMessage());
-            dd($exception->getMessage());
-            return response()->json(['message' => 'Server error, please try later.'], 500);
+        // Email is valid by default because url is signed
+        // if user tries to manipulate the url
+        // then the request will be discarded by the framework itself
+        // so there is no need to verify email again here
+
+        $hasVerified = $this->verificationTokenService->verify($request->query('email'));
+
+        if (!$hasVerified) {
+            return redirect(env('FRONTEND_URL') . 'account-verified?msg=already-activated');
         }
+
+        return redirect(env('FRONTEND_URL').'account-verified');
     }
 }

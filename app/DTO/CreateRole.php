@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\DTO;
 
-class CreateRoleDTO extends Base
+class CreateRole extends Base
 {
     /**
      * @var string

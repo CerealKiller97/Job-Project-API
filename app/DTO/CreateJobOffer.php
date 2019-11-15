@@ -6,7 +6,15 @@ namespace App\DTO;
 
 use Carbon\Carbon;
 
-class CreateJobOfferDTO extends Base
+/**
+ * Class CreateJobOffer
+ * @package App\DTO
+ * @property string $title
+ * @property string $description
+ * @property string $email
+ * @property string $validUntil
+ */
+class CreateJobOffer extends Base
 {
     /**
      * @var string
@@ -22,15 +30,7 @@ class CreateJobOfferDTO extends Base
     protected $email;
 
     /**
-     * @var bool
-     */
-    protected $isSpam;
-    /**
-     * @var
-     */
-    protected $isPublished;
-    /**
      * @var Carbon
      */
-    protected $valid_until;
+    protected $validUntil;
 }

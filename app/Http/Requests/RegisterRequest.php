@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Rules\HashedRoleRule;
 use Hashids\HashidsInterface;
+use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Foundation\Http\FormRequest;
 
 class RegisterRequest extends FormRequest
@@ -22,6 +23,7 @@ class RegisterRequest extends FormRequest
      * Get the validation rules that apply to the request.
      *
      * @return array
+     * @throws BindingResolutionException
      */
     public function rules(): array
     {

@@ -6,7 +6,7 @@ namespace App\DTO;
 
 use Carbon\Carbon;
 
-class JobOfferDTO
+class JobOffer
 {
     /**
      * @var string
@@ -35,5 +35,5 @@ class JobOfferDTO
     /**
      * @var Carbon
      */
-    public $valid_until;
+    public $validUntil;
 }

@@ -11,8 +11,7 @@ $factory->define(JobOffer::class, function (Faker $faker) {
         'title' => $faker->title,
         'description' => $faker->text,
         'email' => $faker->safeEmail,
-        'isSpam' => $faker->boolean(50),
-        'isPublished' => $faker->boolean(50),
+        'state' => $faker->randomElement(['published', 'spam', null]),
         'valid_until' => now()->addDays(rand(1, 5)),
         'user_id' => $faker->numberBetween(1, 10)
     ];

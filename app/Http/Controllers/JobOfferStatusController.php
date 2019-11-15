@@ -3,14 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Contracts\JobStatusServiceInterface;
-use App\Exceptions\EntityNotFoundException;
-use App\Exceptions\JobOfferAlreadyApprovedException;
-use App\Exceptions\JobOfferIsAlreadySpamException;
-use Exception;
-use Illuminate\Contracts\View\Factory;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
-use Illuminate\View\View;
 
 class JobOfferStatusController extends Controller
 {
@@ -26,30 +21,22 @@ class JobOfferStatusController extends Controller
     }
 
     /**
-     * @param  string  $id
-     * @param  string  $status
-     * @return Factory|View
+     * @param  Request  $request
+     * @return RedirectResponse
      */
-    public function status(string $id, string $status)
+    public function status(Request $request): RedirectResponse
     {
         try {
+            $id = $request->query('id');
+            $status = $request->query('state');
             $this->jobStatusService->jobStatus($id, $status);
-//            return view('welcome');
-        } catch (EntityNotFoundException $exception) {
-            Log::error($exception->getMessage());
-            dd($exception->getMessage());
-        }
-        catch (JobOfferIsAlreadySpamException $exception) {
-            Log::error($exception->getMessage());
-            dd($exception->getMessage());
-        }
-        catch (JobOfferAlreadyApprovedException $exception) {
-            Log::error($exception->getMessage());
-            dd($exception->getMessage());
-        }
-        catch (Exception $exception) {
-            Log::error($exception->getMessage());
-            dd($exception->getMessage());
+            return redirect(env('FRONTEND_URL').'auth/login');
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['message' => 'Job offer is not found'], 404);
+        } catch (\InvalidArgumentException $e) {
+            return response()->json(['message' => 'Status is not valid'], 422);
+        } catch (\Throwable $e) {
+            return response()->json(['message' => 'Error while updating job offer'], 500);
         }
     }
 }

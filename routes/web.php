@@ -11,8 +11,11 @@
 |
 */
 
+use App\Http\Middleware\CheckForModerator;
+use Illuminate\Support\Facades\Route;
+
 Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/job-offers/{id}/{status}', 'JobOfferStatusController@status');
+

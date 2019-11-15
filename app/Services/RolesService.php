@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Contracts\RolesServiceInterface;
-use App\DTO\CreateRoleDTO;
-use App\DTO\RoleDTO;
+use App\DTO\CreateRole;
 use App\Exceptions\EntityNotFoundException;
+use App\Http\Resources\Roles;
 use App\Models\Role;
 use Hashids\HashidsInterface;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Facades\DB;
 
 class RolesService implements RolesServiceInterface
 {
@@ -28,44 +30,36 @@ class RolesService implements RolesServiceInterface
     }
 
     /**
-     * @return array
+     * @return Roles
      */
-    public function getRoles(): array
+    public function getRoles(): Roles
     {
-        $roles = Role::query()->select(['id', 'name'])->get();
+        /**
+         * @var Role[] $roles
+         */
+        $roles = Role::all(['id', 'name']);
 
-        $mapped = [];
-        foreach ($roles as $role) {
-            $roleDto = new RoleDTO();
-
-            $mapped[] = $this->mapDTO($role, $roleDto);
-        }
-
-        return $mapped;
+        return new Roles($roles, $this->hashids);
     }
 
     /**
      * @param  string  $id
-     * @return object
-     * @throws EntityNotFoundException
+     * @return \App\Http\Resources\Role
      */
-    public function getRole(string $id): object
+    public function getRole(string $id): \App\Http\Resources\Role
     {
-        $role = Role::find($this->hashids->decode($id)[0] ?? null);
+        /**
+         * @var Role $role
+         */
+        $role = Role::findOrFail($this->hashids->decode($id)[0] ?? null);
 
-        if ($role === null) {
-            throw new EntityNotFoundException("Role");
-        }
-
-        $roleDto = new RoleDTO();
-
-        return $this->mapDTO($role, $roleDto);
+        return new \App\Http\Resources\Role($role, $this->hashids);
     }
 
     /**
-     * @param  CreateRoleDTO  $roleDTO
+     * @param  CreateRole  $roleDTO
      */
-    public function createRole(CreateRoleDTO $roleDTO): void
+    public function createRole(CreateRole $roleDTO): void
     {
         Role::create([
            'name' => $roleDTO->name
@@ -74,42 +68,42 @@ class RolesService implements RolesServiceInterface
 
     /**
      * @param  string  $id
-     * @param  CreateRoleDTO  $roleDTO
-     * @throws EntityNotFoundException
+     * @param  CreateRole  $roleDTO
+     * @return bool
      */
-    public function updateRole(string $id, CreateRoleDTO $roleDTO): void
+    public function updateRole(string $id, CreateRole $roleDTO): bool
     {
-        $role = Role::find($this->hashids->decode($id)[0] ?? null);
+        DB::beginTransaction();
 
-        if ($role === null) {
-            throw new EntityNotFoundException("Role");
+        $updated = Role::query()->where('id', '=', $this->hashids->decode($id)[0] ?? null)
+                            ->update([
+                                'name' => $roleDTO->name
+                            ]) > 0;
+
+        if ($updated) {
+            DB::commit();
+            return true;
         }
-
-        $role->name = $roleDTO->name;
-
-        $role->save();
+        DB::rollBack();
+        return false;
     }
 
     /**
      * @param  string  $id
+     * @return bool
      * @throws EntityNotFoundException
      */
-    public function deleteRole(string $id): void
+    public function deleteRole(string $id): bool
     {
-        $role = Role::find($this->hashids->decode($id)[0] ?? null);
+        DB::beginTransaction();
+        $deleted = Role::destroy($this->hashids->decode($id)[0] ?? null) > 0;
 
-        if ($role === null) {
-            throw new EntityNotFoundException("Role");
+        if ($deleted) {
+            DB::commit();
+            return true;
         }
 
-        $role->delete();
-    }
-
-    private function mapDTO(object $roleDB, RoleDTO $roleDto): RoleDTO
-    {
-        $roleDto->id = $this->hashids->encode($roleDB->id);
-        $roleDto->name = $roleDB->name;
-
-        return $roleDto;
+        DB::rollBack();
+        throw new EntityNotFoundException("Role");
     }
 }

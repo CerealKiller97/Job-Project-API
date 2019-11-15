@@ -3,17 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Contracts\RolesServiceInterface;
-use App\DTO\CreateRoleDTO;
+use App\DTO\CreateRole;
 use App\Exceptions\EntityNotFoundException;
 use App\Http\Requests\RoleRequest;
 use Exception;
-use Illuminate\Http\Request;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse as Response;
 use Illuminate\Support\Facades\Log;
 
 class RolesController extends Controller
 {
-
     /**
      * @var RolesServiceInterface
      */
@@ -31,7 +30,9 @@ class RolesController extends Controller
      */
     public function index(): Response
     {
-        return response()->json($this->rolesService->getRoles());
+        $roles = $this->rolesService->getRoles();
+
+        return response()->json($roles, 200);
     }
 
     /**
@@ -43,7 +44,8 @@ class RolesController extends Controller
     public function store(RoleRequest $request): Response
     {
         try {
-            $this->rolesService->createRole(new CreateRoleDTO($request->validated()));
+            $role = new CreateRole($request->validated());
+            $this->rolesService->createRole($role);
             return response()->json(['message' => 'Successfully added new role.'], 201);
         } catch (Exception $exception) {
             Log::error($exception->getMessage());
@@ -62,7 +64,7 @@ class RolesController extends Controller
         try {
             $role = $this->rolesService->getRole($id);
             return response()->json($role, 200);
-        } catch (EntityNotFoundException $exception) {
+        } catch (ModelNotFoundException $exception) {
             Log::error($exception->getMessage());
             return  response()->json(['message' => $exception->getMessage()], 404);
         } catch (Exception $exception) {
@@ -81,9 +83,9 @@ class RolesController extends Controller
     public function update(RoleRequest $request, string $id)
     {
         try {
-            $this->rolesService->updateRole($id, new CreateRoleDTO($request->validated()));
+            $this->rolesService->updateRole($id, new CreateRole($request->validated()));
             return response()->json(null, 204);
-        } catch (EntityNotFoundException $exception) {
+        } catch (ModelNotFoundException $exception) {
             Log::error($exception->getMessage());
             return  response()->json(['message' => $exception->getMessage()], 404);
         } catch (Exception $exception) {
