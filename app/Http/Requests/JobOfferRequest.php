@@ -26,8 +26,8 @@ class JobOfferRequest extends FormRequest
         return [
             'title' => ['bail', 'required', 'max:200'],
             'description' => ['bail', 'required'],
-            'email' => ['bail', 'required', 'email'],
-            'validUntil' => ['bail', 'required', 'after:tomorrow']
+            'email' => ['bail', 'required', 'email']
+//            'validUntil' => ['bail', 'required', 'after:tomorrow']
         ];
     }
 }

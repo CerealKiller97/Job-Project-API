@@ -26,9 +26,9 @@ class VerificationController extends Controller
         $hasVerified = $this->verificationTokenService->verify($request->query('email'));
 
         if (!$hasVerified) {
-            return redirect(env('FRONTEND_URL') . 'account-verified?msg=already-activated');
+            return redirect(env('FRONTEND_URL') . 'auth/login?msg=already-activated');
         }
 
-        return redirect(env('FRONTEND_URL').'account-verified');
+        return redirect(env('FRONTEND_URL').'auth/login?msg=success');
     }
 }

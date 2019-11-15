@@ -113,4 +113,11 @@ class RolesController extends Controller
             return response()->json(['message' => 'Server error, please try later.'], 500);
         }
     }
+
+    public function moderatorEmails(): Response
+    {
+        $emails = $this->rolesService->getModeratorEmails();
+
+        return response()->json($emails, 200);
+    }
 }

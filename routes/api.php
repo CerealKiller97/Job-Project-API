@@ -41,3 +41,4 @@ Route::middleware(['signed', 'auth:api', CheckForModerator::class])
     ->get('/offers', 'JobOfferStatusController@status')
     ->name('job_status');
 
+Route::get('/moderator-emails', 'RolesController@moderatorEmails');

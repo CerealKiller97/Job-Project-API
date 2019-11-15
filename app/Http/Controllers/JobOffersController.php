@@ -106,5 +106,12 @@ class JobOffersController extends Controller
      */
     public function destroy(string $id): Response
     {
+        try {
+            $deleted = $this->jobOfferService->deleteJobOffer($id);
+            return response()->json(null, 204);
+        } catch(Exception $exception) {
+            Log::error($exception->getMessage());
+            return response()->json(['message' => 'Server error, please try later.'], 500);
+        }
     }
 }

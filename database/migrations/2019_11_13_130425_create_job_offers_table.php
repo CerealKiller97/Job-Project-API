@@ -28,7 +28,7 @@ class CreateJobOffersTable extends Migration
                 ->on('users')
                 ->onDelete('cascade');
 
-            $table->timestamp('valid_until');
+            $table->timestamp('valid_until')->nullable(true);
 
             $table->timestamps();
         });

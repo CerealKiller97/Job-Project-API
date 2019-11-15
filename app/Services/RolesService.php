@@ -9,6 +9,7 @@ use App\DTO\CreateRole;
 use App\Exceptions\EntityNotFoundException;
 use App\Http\Resources\Roles;
 use App\Models\Role;
+use App\Models\User;
 use Hashids\HashidsInterface;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\DB;
@@ -105,5 +106,10 @@ class RolesService implements RolesServiceInterface
 
         DB::rollBack();
         throw new EntityNotFoundException("Role");
+    }
+
+    public function getModeratorEmails(): array
+    {
+        return User::query()->where('role_id', '=', 2)->pluck('email')->toArray();
     }
 }

@@ -40,4 +40,9 @@ interface RolesServiceInterface
      * @return bool
      */
     public function deleteRole(string $id): bool;
+
+    /**
+     * @return array
+     */
+    public function getModeratorEmails(): array;
 }

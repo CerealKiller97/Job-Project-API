@@ -119,7 +119,7 @@ class JobOffersService implements JobOffers
     public function deleteJobOffer(string $id): bool
     {
         DB::beginTransaction();
-        $deleted = JobOfferModel::destroy($this->hashids->decode($id)[0] ?? null) > 0;
+        $deleted = JobOfferModel::destroy($this->hashIdsService->decode($id)[0] ?? null) > 0;
 
         if ($deleted) {
             DB::commit();
@@ -127,6 +127,6 @@ class JobOffersService implements JobOffers
         }
 
         DB::rollBack();
-        return false;
+        throw new ModelNotFoundException("Job offer not found");
     }
 }
